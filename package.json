@@ -1,0 +1,21 @@
+{
+  "name": "discord-music-bot",
+  "version": "1.0.0",
+  "description": "Bot musical para Discord con reproducción automática",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "@discordjs/voice": "^0.16.1",
+    "@distube/ytdl-core": "^4.13.5",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1",
+    "ffmpeg-static": "^5.2.0",
+    "opusscript": "^0.0.8",
+    "tweetnacl": "^1.0.3",
+    "youtube-sr": "^4.3.4",
+    "ytdl-core": "^4.11.5",
+    "ytmusic-api": "^5.3.0"
+  }
+}
