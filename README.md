@@ -1,141 +1,160 @@
-# 🎵 DJ ENIGMA - Discord Music Bot
+# DJ ENIGMA
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js">
-  <img src="https://img.shields.io/badge/Discord.js-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord.js">
-  <img src="https://img.shields.io/badge/YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white" alt="YouTube">
+  <img src="https://img.shields.io/badge/Node.js-16.9+-339933?style=flat-square&logo=nodedotjs" alt="Node.js">
+  <img src="https://img.shields.io/badge/Discord.js-14.14.1-5865F2?style=flat-square&logo=discord" alt="Discord.js">
+  <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License">
 </div>
 
-<br>
+Bot musical profesional para Discord con gestión inteligente de colas, recomendaciones automáticas y controles interactivos para streaming de audio fluido.
 
-**DJ ENIGMA** es un bot musical avanzado para Discord que ofrece reproducción de alta calidad con controles interactivos y recomendaciones automáticas inteligentes.
+## Características
 
-## 🚀 Características Principales
+### Procesamiento de Audio
+- Streaming de audio de YouTube de alta calidad con buffering optimizado
+- Carga asíncrona de playlists con inicio inmediato de reproducción
+- Mecanismos de respaldo inteligentes para servicio ininterrumpido
+- Soporte para pistas individuales y playlists completas
 
-### 🎧 **Reproducción Avanzada**
-- **Soporte completo de YouTube** - URLs individuales y playlists completas
-- **Búsqueda inteligente** - Busca canciones por texto sin necesidad de URLs
-- **Reproducción automática** - Continúa con música relacionada cuando termina la cola
-- **Calidad de audio superior** - Streaming en alta calidad
+### Gestión de Colas
+- Sistema de colas híbridas con pistas de usuario y automáticas separadas
+- Reproducción basada en prioridades (cola de usuario tiene precedencia)
+- Navegación histórica soportando hasta 10 pistas anteriores
+- Visualización dinámica de cola con información completa de pistas
 
-### 🎛️ **Controles Interactivos**
-- **Botones modernos** - Interfaz con botones clickeables (no más comandos de texto)
-- **Controles completos** - Play/Pause, Skip, Previous, Stop, Queue
-- **Modo Shuffle** - Mezcla aleatoria de canciones
-- **Reproducción automática configurable** - Activa/desactiva según preferencias
-
-### 🤖 **Inteligencia Artificial**
-- **Recomendaciones inteligentes** - Usa YTMusic API para sugerencias precisas
-- **Filtro de duplicados** - Evita repetir canciones automáticamente
-- **Sistema de puntuación** - Solo reproduce música de alta relevancia (score ≥ 70)
-- **Detección de artistas** - Reconoce automáticamente artistas y géneros
-
-### 📱 **Gestión de Colas**
-- **Colas híbridas** - Separa música del usuario y recomendaciones automáticas
-- **Visualización completa** - Muestra toda la cola sin límites artificiales
-- **Carga en segundo plano** - Las playlists se cargan mientras reproduce la primera canción
-- **Historial inteligente** - Botón "Previous" para volver a canciones anteriores
-
-## 📦 Instalación
-
-### Prerrequisitos
-- **Node.js** v16.9.0 o superior
-- **npm** o **yarn**
-- **Token de bot de Discord**
-
-### Pasos de instalación
-
-1. **Clona el repositorio**
-   ```bash
-   git clone <repository-url>
-   cd DJ-ENIGMA
-   ```
-
-2. **Instala las dependencias**
-   ```bash
-   npm install
-   ```
-
-3. **Configura el token**
-   
-   Crea un archivo `.env` en la raíz del proyecto:
-   ```env
-   TOKEN=tu_token_del_bot_aqui
-   ```
-
-4. **Inicia el bot**
-   ```bash
-   npm start
-   ```
-
-## 🎮 Uso
-
-### Comandos de Texto
-| Comando | Descripción | Ejemplo |
-|---------|-------------|----------|
-| `!play <url/texto>` | Reproduce música de YouTube o busca por texto | `!play despacito` |
-| `!pause` | Pausa la reproducción actual | `!pause` |
-| `!resume` | Reanuda la reproducción | `!resume` |
-| `!skip` | Salta a la siguiente canción | `!skip` |
-| `!stop` | Detiene la música y desconecta el bot | `!stop` |
-| `!queue` | Muestra la cola completa de reproducción | `!queue` |
+### Recomendaciones Inteligentes
+- Integración con YTMusic API para sugerencias contextuales
+- Algoritmos de detección y filtrado de duplicados
+- Reconocimiento de artistas y géneros con puntuación de relevancia (umbral: 70+)
+- Población automática de cola basada en patrones de escucha
 
 ### Controles Interactivos
-Cada canción incluye botones para:
-- **⏮️** Canción anterior
-- **⏸️/▶️** Pausar/Reproducir
-- **⏭️** Siguiente canción
-- **⏹️** Detener
-- **📋** Ver cola
-- **🔀** Modo aleatorio ON/OFF
-- **🔄** Reproducción automática ON/OFF
+- Interfaz basada en botones con actualizaciones en tiempo real
+- Controles de reproducción completos (reproducir, pausar, saltar, anterior, detener)
+- Modo aleatorio y funcionalidad de reproducción automática configurables
+- Paneles de control persistentes con estados dinámicos de botones
 
-## 🛠️ Tecnologías
+## Instalación
 
-- **[Discord.js v14](https://discord.js.org/)** - Librería principal para Discord
-- **[@discordjs/voice](https://github.com/discordjs/voice)** - Manejo de audio en canales de voz
-- **[ytdl-core](https://github.com/fent/node-ytdl-core)** - Descarga de audio de YouTube
-- **[youtube-sr](https://github.com/DevSnowflake/youtube-sr)** - Búsqueda en YouTube
-- **[ytmusic-api](https://github.com/sigma67/ytmusic-api)** - Recomendaciones musicales inteligentes
+### Prerrequisitos
+- Node.js v16.9.0 o superior
+- Token de Bot de Discord
 
-## 📋 Requisitos del Sistema
+### Configuración
 
-- **RAM**: Mínimo 512MB, recomendado 1GB+
-- **CPU**: Cualquier procesador moderno
-- **Conexión**: Internet estable para streaming
-- **Permisos de Discord**: 
-  - Conectar a canales de voz
-  - Hablar en canales de voz
-  - Enviar mensajes
-  - Usar comandos de barra
+```bash
+# Clonar repositorio
+git clone https://github.com/ghrc19/DjEnigma.git
+cd "DJ ENIGMA"
 
-## 🔧 Configuración Avanzada
+# Instalar dependencias
+npm install
+
+# Configurar entorno
+echo "TOKEN=tu_token_discord_bot" > .env
+
+# Iniciar aplicación
+npm start
+```
+
+## Uso
+
+### Comandos
+
+| Comando | Función | Ejemplo |
+|---------|---------|---------|
+| `!play <consulta>` | Reproducir pista o buscar por texto | `!play bohemian rhapsody` |
+| `!play <url>` | Reproducir desde URL de YouTube o playlist | `!play https://youtube.com/watch?v=...` |
+| `!pause` | Pausar reproducción actual | `!pause` |
+| `!resume` | Reanudar reproducción | `!resume` |
+| `!skip` | Saltar a siguiente pista | `!skip` |
+| `!stop` | Detener reproducción y desconectar | `!stop` |
+| `!queue` | Mostrar estado actual de la cola | `!queue` |
+
+### Controles Interactivos
+
+Cada mensaje de pista incluye botones interactivos:
+- **⏮️** Navegación a pista anterior
+- **⏸️/▶️** Alternar reproducir/pausar
+- **⏭️** Saltar a siguiente pista
+- **⏹️** Detener y desconectar
+- **📋** Vista general de cola
+- **🔀** Alternar modo aleatorio
+- **🔄** Alternar reproducción automática
+
+## Stack Técnico
+
+| Componente | Versión | Propósito |
+|------------|---------|-----------|
+| Discord.js | 14.14.1 | Interfaz API de Discord |
+| @discordjs/voice | 0.16.1 | Gestión de canales de voz |
+| @distube/ytdl-core | 4.13.5 | Extracción de audio de YouTube |
+| youtube-sr | 4.3.4 | Funcionalidad de búsqueda en YouTube |
+| ytmusic-api | 5.3.0 | Recomendaciones musicales |
+| ffmpeg-static | 5.2.0 | Procesamiento de audio |
+| opusscript | 0.0.8 | Codificación de audio Opus |
+
+## Requisitos del Sistema
+
+### Entorno de Ejecución
+- Node.js v16.9.0+
+- 512MB RAM mínimo (1GB+ recomendado)
+- Conexión a internet estable
+
+### Permisos de Discord
+- Conectar a canales de voz
+- Hablar en canales de voz
+- Enviar mensajes y embeds
+- Usar emojis externos
+- Agregar reacciones
+
+## Configuración
 
 ### Variables de Entorno
 ```env
-TOKEN=tu_token_del_bot_aqui
+TOKEN=tu_token_discord_bot
 ```
 
-### Personalización
-- **Tiempo de inactividad**: 5 minutos (configurable en código)
-- **Máximo de canciones anteriores**: 10 (configurable)
-- **Score mínimo para recomendaciones**: 70 (configurable)
+### Parámetros Configurables
+- Tiempo de inactividad: 5 minutos
+- Historial de pistas anteriores: máximo 10 pistas
+- Umbral de recomendación: puntuación de relevancia 70+
+- Límite de resultados de búsqueda: 10 pistas por consulta
 
-## 🤝 Contribuciones
+### Resumen de Arquitectura
+- **Sistema de Colas**: Implementación de cola híbrida con gestión de prioridades
+- **Gestión de Estado**: Manejo centralizado de conexiones y estado del reproductor
+- **Manejo de Errores**: Mecanismos de respaldo automático y limpieza de recursos
+- **Optimización de Memoria**: Gestión eficiente de recursos con recolección automática de basura
 
-Las contribuciones son bienvenidas. Por favor:
-1. Fork el proyecto
-2. Crea una rama para tu feature
-3. Commit tus cambios
-4. Push a la rama
-5. Abre un Pull Request
+## Estructura del Proyecto
 
-## 📄 Licencia
+```
+DJ ENIGMA/
+├── bot.js           # Archivo principal de la aplicación
+├── package.json     # Dependencias y scripts
+├── .env            # Configuración de entorno
+└── README.md       # Documentación
+```
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+### Componentes Principales
+- **MusicQueue**: Sistema de gestión de colas híbridas
+- **getSongInfo()**: Extracción de metadatos de YouTube
+- **getNextRecommendation()**: Recomendaciones de pistas impulsadas por IA
+- **playNext()**: Lógica de reproducción secuencial
+- **createMusicControls()**: Generación de botones interactivos
+
+## Contribuciones
+
+Las contribuciones son bienvenidas. Por favor sigue el flujo de trabajo estándar de GitHub:
+1. Fork del repositorio
+2. Crear una rama de característica
+3. Commit de tus cambios
+4. Enviar un pull request
+
 
 ---
 
 <div align="center">
-  <strong>Desarrollado con ❤️ para la comunidad de Discord</strong>
+  <strong>Contribución para la comunidad de discord.</strong>
 </div>
