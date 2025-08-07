@@ -1,6 +1,21 @@
 require('dotenv').config();
+const libsodium = require('libsodium-wrappers');
+const ffmpeg = require('ffmpeg-static');
+const opus = require('@discordjs/opus');
+
 const { Client, GatewayIntentBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
+const { 
+    joinVoiceChannel, 
+    createAudioPlayer, 
+    createAudioResource, 
+    AudioPlayerStatus, 
+    VoiceConnectionStatus, 
+    entersState,
+    NoSubscriberBehavior,
+    StreamType,
+    generateDependencyReport
+} = require('@discordjs/voice');
+
 const ytdl = require('@distube/ytdl-core');
 const YTMusic = require('ytmusic-api');
 const YouTube = require('youtube-sr').default;
@@ -386,13 +401,28 @@ function createMusicControls(guildId) {
 }
 
 async function playNext(guildId, textChannel) {
+    await libsodium.ready;  
     const queue = queues.get(guildId);
-    const player = players.get(guildId);
+    let player = players.get(guildId);
     const connection = connections.get(guildId);
-
-    if (!queue || !player || !connection) return;
-
+    if (!queue || !connection) return;
     clearInactivityTimer(guildId);
+    if (!player) {
+        player = createAudioPlayer();
+        
+        player.on(AudioPlayerStatus.Idle, () => {
+            playNext(guildId, textChannel);
+        });
+
+        player.on('error', error => {
+            console.error('Error en el reproductor:', error);
+            textChannel.send('❌ Error en la reproducción');
+            playNext(guildId, textChannel);
+        });
+
+        connection.subscribe(player);
+        players.set(guildId, player);
+    }
 
     let nextSong = queue.next();
     
@@ -426,6 +456,9 @@ async function playNext(guildId, textChannel) {
         queue.current = nextSong;
         queue.isPlaying = true;
         queue.isPaused = false;
+        if (player.state.status !== AudioPlayerStatus.Idle) {
+            player.stop(true);
+        }
 
         const stream = ytdl(nextSong.url, { 
             filter: 'audioonly',
@@ -437,8 +470,21 @@ async function playNext(guildId, textChannel) {
                 }
             }
         });
+        stream.on('error', (error) => {
+            console.error('Error en el stream:', error);
+            textChannel.send(`❌ Error en el stream de audio: ${error.message}`);
+            setTimeout(() => {
+                playNext(guildId, textChannel);
+            }, 1000);
+        });
         
-        const resource = createAudioResource(stream);
+        const resource = createAudioResource(stream, { 
+            inlineVolume: true,
+            inputType: StreamType.Arbitrary
+        });
+        if (resource.volume) {
+            resource.volume.setVolume(1.0);
+        }
         
         player.play(resource);
         
@@ -458,12 +504,17 @@ async function playNext(guildId, textChannel) {
         controlMessages.set(guildId, controlMessage);
 
     } catch (error) {
+        console.error('Error en playNext:', error);
         textChannel.send(`❌ Error reproduciendo: ${error.message}`);
-        playNext(guildId, textChannel);
+        setTimeout(() => {
+            playNext(guildId, textChannel);
+        }, 1000);
     }
 }
 
 client.on('ready', async () => {
+    await libsodium.ready;
+    
     console.log(`Bot conectado como ${client.user.tag}`);
     await initializeYTMusic();
 });
@@ -502,7 +553,7 @@ client.on('interactionCreate', async (interaction) => {
                     if (shuffleEnabled.get(guildId) && skipQueue.getUserQueueLength() > 0) {
                         skipQueue.shuffleUserQueue();
                     }
-                    skipPlayer.stop();
+                    skipPlayer.stop(true);
                     await interaction.reply({ content: '⏭️ Canción saltada', ephemeral: true });
                 } else {
                     await interaction.reply({ content: '❌ No hay música reproduciéndose', ephemeral: true });
@@ -520,7 +571,7 @@ client.on('interactionCreate', async (interaction) => {
                     currentQueue.userQueue.unshift(prevSong);
                     const prevPlayer = players.get(guildId);
                     if (prevPlayer) {
-                        prevPlayer.stop();
+                        prevPlayer.stop(true);
                     }
                     await interaction.reply({ content: '⏮️ Canción anterior', ephemeral: true });
                 } else {
@@ -532,20 +583,27 @@ client.on('interactionCreate', async (interaction) => {
                 const stopConnection = connections.get(guildId);
                 const stopQueue = queues.get(guildId);
                 if (stopConnection) {
+                    const stopPlayer = players.get(guildId);
+                    if (stopPlayer) {
+                        stopPlayer.stop(true);
+                        stopPlayer.removeAllListeners();
+                    }
                     if (stopQueue) stopQueue.clear();
                     clearInactivityTimer(guildId);
+
                     stopConnection.destroy();
+
                     connections.delete(guildId);
                     players.delete(guildId);
                     queues.delete(guildId);
                     playedSongs.delete(guildId);
                     playedTitles.delete(guildId);
                     autoPlayEnabled.delete(guildId);
-
                     shuffleEnabled.delete(guildId);
                     previousSongs.delete(guildId);
                     controlMessages.delete(guildId);
                     playlistLoading.delete(guildId);
+                    
                     await interaction.reply({ content: '⏹️ Música detenida y bot desconectado', ephemeral: true });
                 } else {
                     await interaction.reply({ content: '❌ El bot no está conectado', ephemeral: true });
@@ -673,13 +731,37 @@ client.on('messageCreate', async (message) => {
                 const queue = queues.get(guildId);
                 
                 if (!connections.has(guildId)) {
+                    await libsodium.ready;
+                    
                     const connection = joinVoiceChannel({
                         channelId: voiceChannel.id,
                         guildId: guildId,
                         adapterCreator: message.guild.voiceAdapterCreator,
+                        selfDeaf: true,
+                        selfMute: false
                     });
 
-                    const player = createAudioPlayer();
+                    connection.on(VoiceConnectionStatus.Disconnected, async (oldState, newState) => {
+                        try {
+                            await Promise.race([
+                                entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
+                                entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
+                            ]);
+                        } catch (error) {
+                            if (connection.state.status === VoiceConnectionStatus.Disconnected) {
+                                connection.destroy();
+                                connections.delete(guildId);
+                                players.delete(guildId);
+                                message.channel.send('❌ Desconectado del canal de voz');
+                            }
+                        }
+                    });
+
+                    const player = createAudioPlayer({
+                        behaviors: {
+                            noSubscriber: NoSubscriberBehavior.Pause,
+                        },
+                    });
                     
                     player.on(AudioPlayerStatus.Idle, () => {
                         playNext(guildId, message.channel);
@@ -688,12 +770,44 @@ client.on('messageCreate', async (message) => {
                     player.on('error', error => {
                         console.error('Error en el reproductor:', error);
                         message.channel.send('❌ Error en la reproducción');
-                        playNext(guildId, message.channel);
+                        player.stop(true);
+                        setTimeout(() => {
+                            playNext(guildId, message.channel);
+                        }, 1000);
                     });
 
                     connection.subscribe(player);
                     connections.set(guildId, connection);
                     players.set(guildId, player);
+                } else {
+                    const existingConnection = connections.get(guildId);
+                    if (existingConnection && existingConnection.joinConfig.channelId !== voiceChannel.id) {
+                        existingConnection.destroy();
+                        
+                        const newConnection = joinVoiceChannel({
+                            channelId: voiceChannel.id,
+                            guildId: guildId,
+                            adapterCreator: message.guild.voiceAdapterCreator,
+                            selfDeaf: true,
+                            selfMute: false
+                        });
+                        const newPlayer = createAudioPlayer();
+                        
+                        newPlayer.on(AudioPlayerStatus.Idle, () => {
+                            playNext(guildId, message.channel);
+                        });
+                        
+                        newPlayer.on('error', error => {
+                            console.error('Error en el reproductor:', error);
+                            message.channel.send('❌ Error en la reproducción');
+                            newPlayer.stop(true);
+                            playNext(guildId, message.channel);
+                        });
+                        
+                        newConnection.subscribe(newPlayer);
+                        connections.set(guildId, newConnection);
+                        players.set(guildId, newPlayer);
+                    }
                 }
                 
                 if (isYouTubeURL(input)) {
@@ -811,7 +925,7 @@ client.on('messageCreate', async (message) => {
                 const skipQueue = queues.get(guildId);
                 const skipPlayer = players.get(guildId);
                 if (skipPlayer && skipQueue?.isPlaying) {
-                    skipPlayer.stop();
+                    skipPlayer.stop(true);
                     message.reply('⏭️ Canción saltada');
                 } else {
                     message.reply('❌ No hay música reproduciéndose');
@@ -822,14 +936,28 @@ client.on('messageCreate', async (message) => {
                 const stopConnection = connections.get(guildId);
                 const stopQueue = queues.get(guildId);
                 if (stopConnection) {
+                    const stopPlayer = players.get(guildId);
+                    if (stopPlayer) {
+                        stopPlayer.stop(true);
+                        stopPlayer.removeAllListeners();
+                    }
+
                     if (stopQueue) stopQueue.clear();
                     clearInactivityTimer(guildId);
+
                     stopConnection.destroy();
+
                     connections.delete(guildId);
                     players.delete(guildId);
                     queues.delete(guildId);
                     playedSongs.delete(guildId);
                     playedTitles.delete(guildId);
+                    autoPlayEnabled.delete(guildId);
+                    shuffleEnabled.delete(guildId);
+                    previousSongs.delete(guildId);
+                    controlMessages.delete(guildId);
+                    playlistLoading.delete(guildId);
+                    
                     message.reply('⏹️ Música detenida y bot desconectado');
                 } else {
                     message.reply('❌ El bot no está conectado');

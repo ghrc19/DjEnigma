@@ -74,4 +74,3 @@ También puedes controlar la música usando los botones debajo de los mensajes d
   Si intentas ejecutarlo en un servidor, VPS o servicio en la nube, YouTube bloqueará las peticiones y el bot no podrá reproducir música.
 - **No compartas tu token de Discord.**
 - **No uses este bot para fines comerciales.**
-
